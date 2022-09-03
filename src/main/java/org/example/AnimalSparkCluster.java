@@ -82,7 +82,7 @@ public class AnimalSparkCluster {
     private static int batchSizePerWorker = 4;
 
     private static int examplesPerDataSetObject = 1;
-    private static boolean trainingMode = true;
+    private static boolean trainingMode = false;
     private static String modelPath = "/user/root/models/AnimalModelByHdfsSparkClusterModel.bin";
     private static  String trainMonitorLog = "/user/root/trainlog/AnimalModelByHdfsTrainingStatsSpark.dl4j";
     private static  String trainPerformanceLog = "/user/root/trainlog/AnimalModelByHdfsSparkCluster.html";
@@ -103,13 +103,14 @@ public class AnimalSparkCluster {
             //SharedTraining
             VoidConfiguration voidConfiguration = VoidConfiguration.builder()
                     .unicastPort(40123)// This can be any port, but it should be open for IN/OUT comms on all Spark nodes
-                    //.networkMask("192.168.122.0/24")//The master node (cluster1) ip address is 192.168.122.2, the slave node (cluster2) ip address is 192.168.122.83
+                    .networkMask("172.19.0.0/24")//The master node ip address is 172.19.0.2, the worker node one ip address is 172.19.0.3
                     .build();
             tm = new SharedTrainingMaster.Builder(voidConfiguration, batchSizePerWorker)
                     .updatesThreshold(1e-3)// encoding threshold. Please check https://deeplearning4j.org/distributed for details
                     .rddTrainingApproach(RDDTrainingApproach.Direct)
                     .batchSizePerWorker(batchSizePerWorker)//This controls the minibatch size for each worker.
-                    .workersPerNode(1)// this option will enforce exactly 4 workers for each Spark node
+                    .workersPerNode(1)// this option will enforce exactly 1 workers for each Spark node
+                    .collectTrainingStats(true)//to collect training stats.
                     .build();
         } else {
             //Introduce & configuration  for Spark training:https://deeplearning4j.org/spark
